@@ -23,6 +23,9 @@ import papermill as pm
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
+# /!\ Since the PapermillOperator doesn't work in 1.10.10 and 1.10.11
+# I added this custom version of it. Do not use it in production.
+
 @attr.s(auto_attribs=True)
 class File:
     """
@@ -40,9 +43,6 @@ class NoteBook(File):
     parameters: Optional[Dict] = {}
 
     meta_schema: str = __name__ + '.NoteBook'
-
-    def set_context(self, context):
-        self.context = context
 
 class PapermillOperator(BaseOperator):
     """
@@ -64,17 +64,19 @@ class PapermillOperator(BaseOperator):
                  *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
+        self.ibooks: List = []
+        self.obooks: List = []
+
         if input_nb:
-            self.inlets.append(NoteBook(url=input_nb,
-                                        parameters=parameters))
+            self.ibooks.append(NoteBook(url=input_nb, parameters=parameters))
         if output_nb:
-            self.outlets.append(NoteBook(url=output_nb))
+            self.obooks.append(NoteBook(url=output_nb))
 
     def execute(self, context):
-        if not self.inlets or not self.outlets:
+        if not self.ibooks or not self.obooks:
             raise ValueError("Input notebook or output notebook is not specified")
 
-        for i in range(len(self.inlets)):
-            pm.execute_notebook(self.inlets[i].url, self.outlets[i].url,
-                                parameters=self.inlets[i].parameters,
+        for i in range(len(self.ibooks)):
+            pm.execute_notebook(self.ibooks[i].url, self.obooks[i].url,
+                                parameters=self.ibooks[i].parameters,
                                 progress_bar=False, report_mode=True)
