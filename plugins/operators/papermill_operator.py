@@ -20,10 +20,16 @@ from typing import Dict, Optional
 import attr
 import papermill as pm
 
-from airflow.lineage.entities import File
 from airflow.models import BaseOperator
 from airflow.utils.decorators import apply_defaults
 
+@attr.s(auto_attribs=True)
+class File:
+    """
+    File entity. Refers to a file
+    """
+    url: str = attr.ib()
+    type_hint: Optional[str] = None
 
 @attr.s(auto_attribs=True)
 class NoteBook(File):
@@ -35,11 +41,12 @@ class NoteBook(File):
 
     meta_schema: str = __name__ + '.NoteBook'
 
+    def set_context(self, context):
+        self.context = context
 
 class PapermillOperator(BaseOperator):
     """
     Executes a jupyter notebook through papermill that is annotated with parameters
-
     :param input_nb: input notebook (can also be a NoteBook or a File inlet)
     :type input_nb: str
     :param output_nb: output notebook (can also be a NoteBook or File outlet)
@@ -47,7 +54,7 @@ class PapermillOperator(BaseOperator):
     :param parameters: the notebook parameters to set
     :type parameters: dict
     """
-    supports_lineage = True
+    supports_lineage = False
 
     @apply_defaults
     def __init__(self,
