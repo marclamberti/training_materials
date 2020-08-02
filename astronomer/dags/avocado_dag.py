@@ -44,8 +44,8 @@ with DAG('avocado_dag', default_args=default_args,
         }
     )
 
-    evualating_rmse = BranchPythonOperator(
-        task_id="evualating_rmse",
+    evaluating_rmse = BranchPythonOperator(
+        task_id="evaluating_rmse",
         python_callable=read_rmse
     )
 
@@ -58,7 +58,7 @@ with DAG('avocado_dag', default_args=default_args,
     )
 
     downloading_data >> waiting_for_data >> training_model >> evualating_rmse
-    evualating_rmse >> [accurate,inaccurate]
+    evaluating_rmse >> [accurate,inaccurate]
 
 
 
