@@ -57,7 +57,7 @@ with DAG('avocado_dag', default_args=default_args,
         task_id='inaccurate'
     )
 
-    downloading_data >> waiting_for_data >> training_model >> evualating_rmse
+    downloading_data >> waiting_for_data >> training_model >> evaluating_rmse
     evaluating_rmse >> [accurate,inaccurate]
 
 
