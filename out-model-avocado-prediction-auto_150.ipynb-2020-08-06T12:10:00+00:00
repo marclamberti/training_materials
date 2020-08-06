@@ -1,0 +1,562 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 1,
+   "metadata": {
+    "_cell_guid": "79c7e3d0-c299-4dcb-8224-4455121ee9b0",
+    "_uuid": "d629ff2d2480ee46fbb7e2d37f6b5fab8052498a",
+    "execution": {
+     "iopub.execute_input": "2020-08-06T12:22:41.875750Z",
+     "iopub.status.busy": "2020-08-06T12:22:41.875002Z",
+     "iopub.status.idle": "2020-08-06T12:22:42.522788Z",
+     "shell.execute_reply": "2020-08-06T12:22:42.522097Z"
+    },
+    "jupyter": {
+     "source_hidden": true
+    },
+    "papermill": {
+     "duration": 0.66559,
+     "end_time": "2020-08-06T12:22:42.522995",
+     "exception": false,
+     "start_time": "2020-08-06T12:22:41.857405",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "import pandas as pd\n",
+    "import numpy as np\n",
+    "from sqlalchemy import create_engine\n",
+    "from datetime import date\n",
+    "from sklearn.metrics import mean_squared_error"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 2,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-08-06T12:22:42.545695Z",
+     "iopub.status.busy": "2020-08-06T12:22:42.545142Z",
+     "iopub.status.idle": "2020-08-06T12:22:42.567753Z",
+     "shell.execute_reply": "2020-08-06T12:22:42.567210Z"
+    },
+    "jupyter": {
+     "source_hidden": true
+    },
+    "papermill": {
+     "duration": 0.036631,
+     "end_time": "2020-08-06T12:22:42.567941",
+     "exception": false,
+     "start_time": "2020-08-06T12:22:42.531310",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "# THIS IS PURELY FOR TEST PURPOSE NEVER DO THAT IN PRODUCTION\n",
+    "POSTGRES_ADDRESS='postgres'\n",
+    "POSTGRES_PORT='5432'\n",
+    "POSTGRES_USERNAME='postgres'\n",
+    "POSTGRES_PASSWORD='postgres'\n",
+    "\n",
+    "postgres_conn = 'postgresql://{0}:{1}@{2}:{3}/'.format(POSTGRES_USERNAME, POSTGRES_PASSWORD, POSTGRES_ADDRESS, POSTGRES_PORT)\n",
+    "\n",
+    "# Create the connection\n",
+    "cnx = create_engine(postgres_conn)\n"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "_uuid": "1998755ef10683262b29765345cff1c1c7d10b15",
+    "papermill": {
+     "duration": 0.00812,
+     "end_time": "2020-08-06T12:22:42.584035",
+     "exception": false,
+     "start_time": "2020-08-06T12:22:42.575915",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "Read in the Avocado Prices csv file as a DataFrame called df"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 3,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-08-06T12:22:42.607577Z",
+     "iopub.status.busy": "2020-08-06T12:22:42.606880Z",
+     "iopub.status.idle": "2020-08-06T12:22:42.608758Z",
+     "shell.execute_reply": "2020-08-06T12:22:42.609428Z"
+    },
+    "jupyter": {
+     "source_hidden": true
+    },
+    "papermill": {
+     "duration": 0.017727,
+     "end_time": "2020-08-06T12:22:42.609658",
+     "exception": false,
+     "start_time": "2020-08-06T12:22:42.591931",
+     "status": "completed"
+    },
+    "tags": [
+     "parameters"
+    ]
+   },
+   "outputs": [],
+   "source": [
+    "# Parameterized\n",
+    "\n",
+    "filepath='avocado.csv'\n",
+    "ml_id='auto_100'\n",
+    "ml_date=date.today()\n",
+    "n_estimators = 100\n",
+    "max_features = 'auto'"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 4,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-08-06T12:22:42.627368Z",
+     "iopub.status.busy": "2020-08-06T12:22:42.626865Z",
+     "iopub.status.idle": "2020-08-06T12:22:42.630176Z",
+     "shell.execute_reply": "2020-08-06T12:22:42.630714Z"
+    },
+    "jupyter": {
+     "source_hidden": true
+    },
+    "papermill": {
+     "duration": 0.013751,
+     "end_time": "2020-08-06T12:22:42.630905",
+     "exception": false,
+     "start_time": "2020-08-06T12:22:42.617154",
+     "status": "completed"
+    },
+    "tags": [
+     "injected-parameters"
+    ]
+   },
+   "outputs": [],
+   "source": [
+    "# Parameters\n",
+    "filepath = \"/tmp/avocado.csv\"\n",
+    "n_estimators = 150\n",
+    "max_features = \"auto\"\n",
+    "ml_id = \"auto_150\"\n"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 5,
+   "metadata": {
+    "_uuid": "55d0e719eb8b91d763c1eacaf0f51ee0586486fc",
+    "execution": {
+     "iopub.execute_input": "2020-08-06T12:22:42.649625Z",
+     "iopub.status.busy": "2020-08-06T12:22:42.649012Z",
+     "iopub.status.idle": "2020-08-06T12:22:42.678881Z",
+     "shell.execute_reply": "2020-08-06T12:22:42.679329Z"
+    },
+    "jupyter": {
+     "source_hidden": true
+    },
+    "papermill": {
+     "duration": 0.040723,
+     "end_time": "2020-08-06T12:22:42.679639",
+     "exception": false,
+     "start_time": "2020-08-06T12:22:42.638916",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "df= pd.read_csv(filepath)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "_uuid": "434e0457f550e2200424e5ec26162e1aa5904005",
+    "papermill": {
+     "duration": 0.007861,
+     "end_time": "2020-08-06T12:22:42.696152",
+     "exception": false,
+     "start_time": "2020-08-06T12:22:42.688291",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "The Feature \"Unnamed:0\" is just a representation of the indexes, so it's useless to keep it, lets remove it !"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 6,
+   "metadata": {
+    "_uuid": "9875398e37728dc3141fed4228be337a4735beb6",
+    "execution": {
+     "iopub.execute_input": "2020-08-06T12:22:42.714149Z",
+     "iopub.status.busy": "2020-08-06T12:22:42.713629Z",
+     "iopub.status.idle": "2020-08-06T12:22:42.718974Z",
+     "shell.execute_reply": "2020-08-06T12:22:42.719327Z"
+    },
+    "jupyter": {
+     "source_hidden": true
+    },
+    "papermill": {
+     "duration": 0.015813,
+     "end_time": "2020-08-06T12:22:42.719649",
+     "exception": false,
+     "start_time": "2020-08-06T12:22:42.703836",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "df.drop('Unnamed: 0',axis=1,inplace=True)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "_uuid": "12e94ad381e4cb8d2c8a9bbe08ce07ab5d49c040",
+    "papermill": {
+     "duration": 0.009176,
+     "end_time": "2020-08-06T12:22:42.736967",
+     "exception": false,
+     "start_time": "2020-08-06T12:22:42.727791",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "well as a first observation we can see that we are lucky, we dont have any missing values (18249 complete data) and 13 columns.\n",
+    "Now let's do some Feature Engineering on the Date Feature so we can be able to use the day and the month columns in building our machine learning model later. ( I didn't mention the year because its already there in data frame)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 7,
+   "metadata": {
+    "_uuid": "f031639ce794656e877484d1c9c356df7028177f",
+    "execution": {
+     "iopub.execute_input": "2020-08-06T12:22:42.758068Z",
+     "iopub.status.busy": "2020-08-06T12:22:42.757561Z",
+     "iopub.status.idle": "2020-08-06T12:22:42.905764Z",
+     "shell.execute_reply": "2020-08-06T12:22:42.905073Z"
+    },
+    "jupyter": {
+     "source_hidden": true
+    },
+    "papermill": {
+     "duration": 0.159697,
+     "end_time": "2020-08-06T12:22:42.905947",
+     "exception": false,
+     "start_time": "2020-08-06T12:22:42.746250",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "df['Date']=pd.to_datetime(df['Date'])\n",
+    "df['Month']=df['Date'].apply(lambda x:x.month)\n",
+    "df['Day']=df['Date'].apply(lambda x:x.day)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "_uuid": "ebdcac9924ce3e366fd3a75170682f7113385b7a",
+    "papermill": {
+     "duration": 0.008117,
+     "end_time": "2020-08-06T12:22:42.922759",
+     "exception": false,
+     "start_time": "2020-08-06T12:22:42.914642",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "as we can see we have 54 regions and 2 unique types, so it's going to be easy to to transform the type feature to dummies, but for the region its going to be a bit complexe so I decided to drop the entire column.\n",
+    "I will drop the Date Feature as well because I already have 3 other columns for the Year, Month and Day."
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 8,
+   "metadata": {
+    "_uuid": "a798682da34327b731ef262985fd50ba68e06460",
+    "execution": {
+     "iopub.execute_input": "2020-08-06T12:22:42.945569Z",
+     "iopub.status.busy": "2020-08-06T12:22:42.944896Z",
+     "iopub.status.idle": "2020-08-06T12:22:42.959359Z",
+     "shell.execute_reply": "2020-08-06T12:22:42.958800Z"
+    },
+    "jupyter": {
+     "source_hidden": true
+    },
+    "papermill": {
+     "duration": 0.028699,
+     "end_time": "2020-08-06T12:22:42.959622",
+     "exception": false,
+     "start_time": "2020-08-06T12:22:42.930923",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "df_final=pd.get_dummies(df.drop(['region','Date'],axis=1),drop_first=True)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "_uuid": "8b74a6b88cb3e9b3e1d1e987e061048f203c7364",
+    "papermill": {
+     "duration": 0.008294,
+     "end_time": "2020-08-06T12:22:42.978998",
+     "exception": false,
+     "start_time": "2020-08-06T12:22:42.970704",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "Now our data are ready! lets apply our model which is going to be the Linear Regression because our Target variable 'AveragePrice'is continuous.\n",
+    "Let's now begin to train out regression model! We will need to first split up our data into an X array that contains the features to train on, and a y array with the target variable"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 9,
+   "metadata": {
+    "_uuid": "830591f99de9715241e688bf9ce265e979401ff5",
+    "execution": {
+     "iopub.execute_input": "2020-08-06T12:22:43.005186Z",
+     "iopub.status.busy": "2020-08-06T12:22:43.004458Z",
+     "iopub.status.idle": "2020-08-06T12:22:43.015436Z",
+     "shell.execute_reply": "2020-08-06T12:22:43.014980Z"
+    },
+    "jupyter": {
+     "source_hidden": true
+    },
+    "papermill": {
+     "duration": 0.026093,
+     "end_time": "2020-08-06T12:22:43.015691",
+     "exception": false,
+     "start_time": "2020-08-06T12:22:42.989598",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "X=df_final.iloc[:,1:14]\n",
+    "y=df_final['AveragePrice']\n",
+    "from sklearn.model_selection import train_test_split\n",
+    "X_train,X_test,y_train,y_test=train_test_split(X,y,test_size=0.2,random_state=42)"
+   ]
+  },
+  {
+   "cell_type": "markdown",
+   "metadata": {
+    "_uuid": "ea730c77a31cde9de98263079a189accb8b5772b",
+    "papermill": {
+     "duration": 0.009375,
+     "end_time": "2020-08-06T12:22:43.034475",
+     "exception": false,
+     "start_time": "2020-08-06T12:22:43.025100",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "source": [
+    "Creating and Training the Model"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 10,
+   "metadata": {
+    "_uuid": "eb37015e78974e5fd2ae7e13d065c8ab0a9c6948",
+    "execution": {
+     "iopub.execute_input": "2020-08-06T12:22:43.061024Z",
+     "iopub.status.busy": "2020-08-06T12:22:43.060458Z",
+     "iopub.status.idle": "2020-08-06T12:22:56.376395Z",
+     "shell.execute_reply": "2020-08-06T12:22:56.375578Z"
+    },
+    "jupyter": {
+     "source_hidden": true
+    },
+    "papermill": {
+     "duration": 13.331362,
+     "end_time": "2020-08-06T12:22:56.376643",
+     "exception": false,
+     "start_time": "2020-08-06T12:22:43.045281",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "from sklearn.ensemble import RandomForestRegressor\n",
+    "rdr = RandomForestRegressor(\n",
+    "    n_estimators=n_estimators,\n",
+    "    max_features=max_features\n",
+    ")\n",
+    "rdr.fit(X_train,y_train)\n",
+    "pred=rdr.predict(X_test)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 11,
+   "metadata": {
+    "_uuid": "7ed5b8d4e8abb44a4b548c13ac9fb2d65227d1c5",
+    "execution": {
+     "iopub.execute_input": "2020-08-06T12:22:56.401614Z",
+     "iopub.status.busy": "2020-08-06T12:22:56.401033Z",
+     "iopub.status.idle": "2020-08-06T12:22:56.403783Z",
+     "shell.execute_reply": "2020-08-06T12:22:56.403267Z"
+    },
+    "jupyter": {
+     "source_hidden": true
+    },
+    "papermill": {
+     "duration": 0.01562,
+     "end_time": "2020-08-06T12:22:56.404011",
+     "exception": false,
+     "start_time": "2020-08-06T12:22:56.388391",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "#%%capture cap --no-stderr\n",
+    "#print(np.sqrt(mean_squared_error(y_test, pred)))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 12,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-08-06T12:22:56.426378Z",
+     "iopub.status.busy": "2020-08-06T12:22:56.425740Z",
+     "iopub.status.idle": "2020-08-06T12:22:56.428654Z",
+     "shell.execute_reply": "2020-08-06T12:22:56.428195Z"
+    },
+    "jupyter": {
+     "source_hidden": true
+    },
+    "papermill": {
+     "duration": 0.01543,
+     "end_time": "2020-08-06T12:22:56.428852",
+     "exception": false,
+     "start_time": "2020-08-06T12:22:56.413422",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [],
+   "source": [
+    "#with open(output_rmse, 'w') as f:\n",
+    "#    f.write(cap.stdout)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 13,
+   "metadata": {
+    "execution": {
+     "iopub.execute_input": "2020-08-06T12:22:56.452931Z",
+     "iopub.status.busy": "2020-08-06T12:22:56.452102Z",
+     "iopub.status.idle": "2020-08-06T12:22:56.470004Z",
+     "shell.execute_reply": "2020-08-06T12:22:56.469432Z"
+    },
+    "jupyter": {
+     "source_hidden": true
+    },
+    "papermill": {
+     "duration": 0.031906,
+     "end_time": "2020-08-06T12:22:56.470182",
+     "exception": false,
+     "start_time": "2020-08-06T12:22:56.438276",
+     "status": "completed"
+    },
+    "tags": []
+   },
+   "outputs": [
+    {
+     "data": {
+      "text/plain": [
+       "<sqlalchemy.engine.result.ResultProxy at 0x7ff4d313d910>"
+      ]
+     },
+     "execution_count": 13,
+     "metadata": {},
+     "output_type": "execute_result"
+    }
+   ],
+   "source": [
+    "cnx.execute(\"\"\"\n",
+    "    INSERT INTO ml.accuracies (ml_id, ml_date, accuracy) VALUES ('{0}', '{1}', {2}) \n",
+    "    ON CONFLICT (ml_id, ml_date) \n",
+    "    DO\n",
+    "        UPDATE SET accuracy = {2};\n",
+    "    \"\"\".format(ml_id, ml_date, np.sqrt(mean_squared_error(y_test, pred))))"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.7.7"
+  },
+  "papermill": {
+   "duration": 16.133943,
+   "end_time": "2020-08-06T12:22:56.891170",
+   "environment_variables": {},
+   "exception": null,
+   "input_path": "/usr/local/airflow/include/notebooks/avocado_prediction.ipynb",
+   "output_path": "/tmp/out-model-avocado-prediction-auto_150.ipynb",
+   "parameters": {
+    "filepath": "/tmp/avocado.csv",
+    "max_features": "auto",
+    "ml_id": "auto_150",
+    "n_estimators": 150
+   },
+   "start_time": "2020-08-06T12:22:40.757227",
+   "version": "2.1.2"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 4
+}
