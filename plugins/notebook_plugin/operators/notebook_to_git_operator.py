@@ -15,10 +15,10 @@ class NotebookToGitOperator(BaseOperator):
       self.nb_path  = nb_path
       self.nb_name  = nb_name
 
-    def execute(self, context=None):
+    def execute(self, context):
         self.hook = GitHook(self.conn_id)
         self.log.info("Copying the notebook {0} in the repo".format(self.nb_name))
         shutil.copyfile(src='{0}/{1}'.format(self.nb_path, self.nb_name), 
-                        dst='{0}/{1}'.format(self.hook.path, self.nb_name))
+                        dst='{0}/{1}-{1}'.format(self.hook.path, context['execution_date'], self.nb_name))
         self.log.info("Pushing the notebook in the repo")
         self.hook.push()
