@@ -58,7 +58,7 @@ with DAG('avocado_dag',
             training_model_tasks.append(PapermillOperator(
                 task_id='training_model_{0}'.format(ml_id),
                 input_nb='/usr/local/airflow/include/notebooks/avocado_prediction.ipynb',
-                output_nb='/tmp/out-model-avocado-predition-{0}.ipynb'.format(ml_id),
+                output_nb='/tmp/out-model-avocado-prediction-{0}.ipynb'.format(ml_id),
                 pool='training_pool',
                 parameters={
                     'filepath': '/tmp/avocado.csv',
