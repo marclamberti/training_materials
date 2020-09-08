@@ -1,0 +1,22 @@
+name: CICD pipeline for Airflow
+
+on:
+  push:
+    branches: [ dev ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag airflow:${{ github.sha }}
+    - name: Running tests
+      run: <RUN COMMAND>
+    #- name: Publish to Astronomer.io
+    #  uses: elgohr/Publish-Docker-Github-Action@2.6
+    #  with:
+    #    name: infrared-photon-7780/airflow:ci-${{ github.sha }}
+    #    username: _
+    #    password: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+    #    registry: registry.gcp0001.us-east4.astronomer.io
