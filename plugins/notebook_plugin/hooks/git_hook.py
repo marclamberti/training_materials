@@ -11,7 +11,14 @@ class GitHook(BaseHook):
 
         conn_config = {}
 
-        # Add the code here to get connection info
+        if conn.host:
+            conn_config['host'] = conn.host
+        if conn.login:
+            conn_config['login'] = conn.login
+
+        conn_config['repo']     = conn.extra_dejson.get('repo', None)
+        conn_config['oauth']    = conn.extra_dejson.get('oauth', None)
+        conn_config['path']     = conn.extra_dejson.get('path', None)
 
         url = "https:///{0}:x-oauth-basic@{1}/{2}/{3}".format(conn_config['oauth'], conn_config['host'], conn_config['login'], conn_config['repo'])
         self.path = conn_config['path']
