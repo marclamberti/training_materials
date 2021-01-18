@@ -1,6 +1,6 @@
 from airflow.exceptions import AirflowException
-from airflow.operators.postgres_operator import PostgresOperator
-from airflow.hooks.postgres_hook import PostgresHook
+from airflow.providers.postgres.operators.postgres import PostgresOperator
+from airflow.providers.postgres.hooks.postgres import PostgresHook
 
 class NotebookToKeepOperator(PostgresOperator):
 
