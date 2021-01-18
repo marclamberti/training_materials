@@ -1,7 +1,7 @@
 import airflow.utils.dates
 from airflow import DAG
 # ADD IMPORT
-from airflow.operators.postgres_operator import PostgresOperator
+from airflow.providers.postgres.operators.postgres import PostgresOperator
 from datetime import datetime, timedelta
 
 default_args = {
