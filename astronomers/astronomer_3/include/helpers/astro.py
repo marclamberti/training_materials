@@ -2,15 +2,15 @@ import urllib.request
 from airflow.models import Variable
 import os
 
-def download_dataset():
+def download_dataset(ti):
     dataset = Variable.get('avocado_dag_dataset_settings', deserialize_json=True)
-    output = dataset['filepath'] + dataset['filename']
+    output = f"{dataset['filepath']}{dataset['filename']}"
     urllib.request.urlretrieve(dataset['url'], filename=output)
-    return os.path.getsize(output) 
+    return os.path.getsize(output)
 
-def check_dataset(**kwargs):
-    ti = kwargs['ti']
-    filesize = ti.xcom_pull(key=None, task_ids='downloading_data')
+
+def check_dataset(ti):
+    filesize = int(ti.xcom_pull(task_ids=['downloading_data'])[0])
     if filesize <= 0:
         raise ValueError('Dataset is empty')
 

@@ -1,31 +1,26 @@
 from airflow import DAG
 from airflow.operators.dummy_operator import DummyOperator
-from airflow.operators.python_operator import PythonOperator
+from airflow.operators.python import PythonOperator, BranchPythonOperator
+from include.helpers.astro import download_dataset,read_rmse,check_dataset
+from airflow.sensors.filesystem import FileSensor
+from airflow.providers.papermill.operators.papermill import PapermillOperator
+from airflow.providers.postgres.operators.postgres import PostgresOperator
 from airflow.operators.sql import BranchSQLOperator
-from airflow.operators.postgres_operator import PostgresOperator
-from airflow.contrib.sensors.file_sensor import FileSensor
-from airflow.operators.papermill_operator import PapermillOperator
-from include.helpers.astro import download_dataset, read_rmse, check_dataset
 
 from datetime import datetime, timedelta
 
 default_args = {
-    'retries': 3,
     'email_on_retry': False,
-    'email_on_failure': False,
-    'retry_delay': timedelta(minutes=5),
-    'depends_on_past': False
+    'retries': 3,
+    'retry_delay': timedelta(minutes=5)
 }
 
-with DAG('avocado_dag', 
-    default_args=default_args, 
+with DAG('avocado_dag', default_args=default_args, 
     description='Forecasting avocado prices', 
-    schedule_interval='*/10 * * * *', 
-    start_date=datetime(2020, 1, 1), 
-    catchup=False) as dag:
+    schedule_interval='*/10 * * * *', start_date=datetime(2020, 1, 1), catchup=False) as dag:
 
-    creating_accuray_table = PostgresOperator(
-        task_id='creating_accuray_table',
+    creating_table = PostgresOperator(
+        task_id='creating_table',
         sql='sql/CREATE_TABLE_ACCURACIES.sql',
         postgres_conn_id='postgres'
     )
@@ -34,11 +29,10 @@ with DAG('avocado_dag',
         task_id='downloading_data',
         python_callable=download_dataset
     )
-	
+
     sanity_check = PythonOperator(
-        task_id='sanity_check',
-        python_callable=check_dataset,
-        provide_context=True
+        task_id="sanity_check",
+        python_callable=check_dataset
     )
 
     waiting_for_data = FileSensor(
@@ -49,17 +43,16 @@ with DAG('avocado_dag',
     )
 
     n_estimators = [100, 150]
-    max_features = ['auto', 'sqrt']
-    training_model_tasks = []
+    max_features = ['auto','sqrt']
 
+    training_model_tasks = []
     for feature in max_features:
         for estimator in n_estimators:
-            ml_id = feature + '_' + str(estimator)
+            ml_id = f"{feature}_{estimator}"
             training_model_tasks.append(PapermillOperator(
-                task_id='training_model_{0}'.format(ml_id),
+                task_id=f'training_model_{ml_id}',
                 input_nb='/usr/local/airflow/include/notebooks/avocado_prediction.ipynb',
-                output_nb='/tmp/out-model-avocado-prediction-{0}.ipynb'.format(ml_id),
-                pool='training_pool',
+                output_nb=f'/tmp/out-model-avocado-prediction-{ml_id}.ipynb',
                 parameters={
                     'filepath': '/tmp/avocado.csv',
                     'n_estimators': estimator,
@@ -80,9 +73,12 @@ with DAG('avocado_dag',
         task_id='accurate'
     )
 
-    innacurate = DummyOperator(
+    inaccurate = DummyOperator(
         task_id='inaccurate'
     )
 
-    creating_accuray_table >> downloading_data >> waiting_for_data >> sanity_check >> training_model_tasks >> evaluating_rmse
-    evaluating_rmse >> [accurate, innacurate]
+    creating_table >> downloading_data >> sanity_check >> waiting_for_data >> training_model_tasks >> evaluating_rmse
+    evaluating_rmse >> [ accurate, inaccurate ]
+
+
+	
