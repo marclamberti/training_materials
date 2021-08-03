@@ -1,10 +1,12 @@
 from airflow.exceptions import AirflowException
 from airflow.providers.postgres.operators.postgres import PostgresOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
+from airflow.utils.decorators import apply_defaults
 
 class NotebookToKeepOperator(PostgresOperator):
 
-    def __init(self):
+    @apply_defaults
+    def __init__(self, *args, **kwargs):
         super(NotebookToKeepOperator, self).__init__(*args, **kwargs)
 
     def execute(self, context):
