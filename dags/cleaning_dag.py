@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 
 default_args = {
         "owner": "airflow", 
-        "start_date": datetime(2020, 1, 1)
+        "start_date": datetime(2022, 1, 1)
     }
 
 with DAG(dag_id="cleaning_dag", 

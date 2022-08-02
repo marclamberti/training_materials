@@ -1,22 +1,28 @@
-name: CICD pipeline for Airflow
+name: CICD Airflow
 
 on:
   push:
-    branches: [ dev ]
+    branches:
+      - dev
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      ASTRONOMER_KEY_ID: ${{ secrets.ASTRO_ACCESS_KEY_ID_DEV }}
+      ASTRONOMER_KEY_SECRET: ${{ secrets.ASTRO_SECRET_ACCESS_KEY_DEV }}
     steps:
-    - uses: actions/checkout@v2
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag airflow:${{ github.sha }}
-    - name: Running tests
-      run: <RUN COMMAND>
-    #- name: Publish to Astronomer.io
-    #  uses: elgohr/Publish-Docker-Github-Action@2.6
-    #  with:
-    #    name: infrared-photon-7780/airflow:ci-${{ github.sha }}
-    #    username: _
-    #    password: ${{ secrets.SERVICE_ACCOUNT_KEY }}
-    #    registry: registry.gcp0001.us-east4.astronomer.io
+    - name: Check out the repo
+      uses: actions/checkout@v2
+    - name: Create image tag
+      id: image_tag
+      run: echo ::set-output name=image_tag::astro-$(date +%Y%m%d%H%M%S)
+    - name: Build image
+      uses: docker/build-push-action@v2
+      with:
+        tags: ${{ steps.image_tag.outputs.image_tag }}
+        load: true
+    - name: Deploy to Astro
+      run: |
+        curl -sSL install.astronomer.io | sudo bash -s
+        astro deploy --image-name ${{ steps.image_tag.outputs.image_tag }}
